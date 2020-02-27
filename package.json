@@ -4,7 +4,9 @@
   "description": "",
   "keywords": [],
   "main": "src/index.js",
-  "dependencies": {},
+  "dependencies": {
+    "react-scripts": "^3.4.0"
+  },
   "devDependencies": {
     "typescript": "3.3.3"
   },
