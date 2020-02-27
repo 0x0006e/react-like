@@ -1,75 +1,6 @@
-function createElement(type, props, ...children) {
-  return {
-    type,
-    props: {
-      ...props,
-      children: children.map(child =>
-        typeof child === "object" ? child : createTextElement(child)
-      )
-    }
-  };
-}
-
-function createTextElement(text) {
-  return {
-    type: "TEXT_ELEMENT",
-    props: {
-      nodeValue: text,
-      children: []
-    }
-  };
-}
-
-function createDom(fiber) {
-  const dom =
-    fiber.type == "TEXT_ELEMENT"
-      ? document.createTextNode("")
-      : document.createElement(fiber.type);
-
-  updateDom(dom, {}, fiber.props);
-
-  return dom;
-}
-
-const isEvent = key => key.startsWith("on");
-const isProperty = key => key !== "children" && !isEvent(key);
-const isNew = (prev, next) => key => prev[key] !== next[key];
-const isGone = (prev, next) => key => !(key in next);
-function updateDom(dom, prevProps, nextProps) {
-  //Remove old or changed event listeners
-  Object.keys(prevProps)
-    .filter(isEvent)
-    .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key))
-    .forEach(name => {
-      const eventType = name.toLowerCase().substring(2);
-      dom.removeEventListener(eventType, prevProps[name]);
-    });
-
-  // Remove old properties
-  Object.keys(prevProps)
-    .filter(isProperty)
-    .filter(isGone(prevProps, nextProps))
-    .forEach(name => {
-      dom[name] = "";
-    });
-
-  // Set new or changed properties
-  Object.keys(nextProps)
-    .filter(isProperty)
-    .filter(isNew(prevProps, nextProps))
-    .forEach(name => {
-      dom[name] = nextProps[name];
-    });
-
-  // Add event listeners
-  Object.keys(nextProps)
-    .filter(isEvent)
-    .filter(isNew(prevProps, nextProps))
-    .forEach(name => {
-      const eventType = name.toLowerCase().substring(2);
-      dom.addEventListener(eventType, nextProps[name]);
-    });
-}
+import createElement from "./createElement";
+import createDom from "./createDom";
+import updateDom from "./updateDom";
 
 function commitRoot() {
   deletions.forEach(commitWork);
@@ -219,7 +150,8 @@ function reconcileChildren(wipFiber, elements) {
     const element = elements[index];
     let newFiber = null;
 
-    const sameType = oldFiber && element && element.type == oldFiber.type;
+    const sameType =
+      oldFiber && element && element.type === oldFiber.type;
 
     if (sameType) {
       newFiber = {
@@ -270,12 +202,10 @@ const Didact = {
 /** @jsx Didact.createElement */
 function Counter() {
   const [state, setState] = Didact.useState(1);
-  return (
-    <h1 onClick={() => setState(c => c + 1)} style="user-select: none">
-      Count: {state}
-    </h1>
-  );
+  return <h1 onClick={() => setState(c => c + 1)}>Count: {state}</h1>;
 }
+
 const element = <Counter />;
 const container = document.getElementById("root");
+
 Didact.render(element, container);
